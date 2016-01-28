@@ -15,6 +15,8 @@ def color(c)
 end
 
 $original = ChunkyPNG::Image.from_file('ORIGINAL.png')
+
+# Build some hashes to speed up scoring
 $o_r = Hash.new
 $o_g = Hash.new
 $o_b = Hash.new
@@ -31,6 +33,8 @@ for x in (0...386)
   end
 end
 $new = ChunkyPNG::Image.new(386,320,color(0xFFFFFF00))
+
+
 
 class Block
 
@@ -157,11 +161,9 @@ end
 def generate_ruby_text()
   outtext = ''
   outtext << "require 'chunky_png'\n"
-  outtext << "def c(x)\n"
-  outtext << "x*256+255\n"
-  outtext << "end\n"
   outtext << "def r(w,x,y,z,k)\n"
-  outtext << "$p.rect(w,x,y,z,c(k),c(k))\n"
+  outtext << "c=k*256+255\n"
+  outtext << "$p.rect(w,x,y,z,c,c)\n"
   outtext << "end\n"
   outtext << "$p=ChunkyPNG::Image.new(386,320,255)\n"
   Block::all.each do |b|
@@ -179,39 +181,32 @@ def generate_ruby(filename,ruby_text)
 end
 
 ####################################################################
-# Build 1024 byte ruby executables and save them only if they are
-# closer to the original image than any of the previous ones 
+# Build a 1024 byte ruby executable 
 ####################################################################
-iteration = 1
-best_score = 1000000.0
-while true
 
-  Block::clear
-  r = Block.new(0,0,385,319)
-  r.find_best_score()
-  puts "Blocks = 1, Score = #{full_score()}\n"
+Block::clear
+r = Block.new(0,0,385,319)
+r.find_best_score()
+puts "Blocks = 1, Score = #{full_score()}\n"
+newtext = generate_ruby_text()
+rubytext = ''
+old_score = 1000000.0
+
+i = 2
+while newtext.size <= 1024
+  highest_scoring_block.split
+  puts "Blocks = #{i}, Score = #{full_score()}\n"
+  filename = "i_#{i.to_s.rjust(2,"0")}"
   newtext = generate_ruby_text()
-  rubytext = ''
-  old_score = 1000000.0
-
-  i = 2
-  while newtext.size <= 1024
-    highest_scoring_block.split
-    puts "Blocks = #{i}, Score = #{full_score()}\n"
-    filename = "i_#{iteration.to_s.rjust(4,"0")}"
-    newtext = generate_ruby_text()
-    if newtext.size > 1024
-      puts "*****************************************************************\n"
-      puts "* ITERATION #{iteration} COMPLETE: Steps = #{i-1}, Score = #{old_score}\n"
-      puts "*****************************************************************\n"
-      if old_score < best_score
-        generate_ruby(filename,rubytext)
-        best_score = old_score
-      end
-    end
-    rubytext = newtext
-    old_score = full_score()
-    i += 1
+  if newtext.size > 1024
+    puts "*****************************************************************\n"
+    puts "* COMPLETE: Steps = #{i-1}, Score = #{old_score}\n"
+    puts "*****************************************************************\n"
+  else
+    generate_ruby(filename,rubytext)
   end
-  iteration += 1
+  rubytext = newtext
+  old_score = full_score()
+  i += 1
 end
+
