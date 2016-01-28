@@ -198,7 +198,7 @@ while true
   while newtext.size <= 1024
     highest_scoring_block.split
     puts "Blocks = #{i}, Score = #{full_score()}\n"
-    filename = "i_#{iteration.to_s.rjust(2,"0")}"
+    filename = "i_#{iteration.to_s.rjust(4,"0")}"
     newtext = generate_ruby_text()
     if newtext.size > 1024
       puts "*****************************************************************\n"
