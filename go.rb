@@ -176,11 +176,14 @@ end
 
 Block::clear
 r = Block.new(0,0,385,319)
+i = 1
 r.find_best_score()
-puts "Blocks = 1, Score = #{full_score()}\n"
-newtext = generate_ruby_text()
-rubytext = ''
+puts "Blocks = #{i}, Score = #{full_score()}\n"
+filename = "i_#{i.to_s.rjust(2,"0")}"
+rubytext = generate_ruby_text()
+generate_ruby(filename,rubytext)
 old_score = 1000000.0
+newtext = ''
 
 i = 2
 while newtext.size <= 1024
