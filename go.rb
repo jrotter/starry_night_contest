@@ -178,6 +178,10 @@ def generate_ruby(filename,ruby_text)
   outfile.close
 end
 
+####################################################################
+# Build 1024 byte ruby executables and save them only if they are
+# closer to the original image than any of the previous ones 
+####################################################################
 iteration = 1
 best_score = 1000000.0
 while true
@@ -188,10 +192,10 @@ while true
   puts "Blocks = 1, Score = #{full_score()}\n"
   newtext = generate_ruby_text()
   rubytext = ''
-  old_score = 0
+  old_score = 1000000.0
 
   i = 2
-  while newtext.size < 1024
+  while newtext.size <= 1024
     highest_scoring_block.split
     puts "Blocks = #{i}, Score = #{full_score()}\n"
     filename = "i_#{iteration.to_s.rjust(2,"0")}"
@@ -200,10 +204,13 @@ while true
       puts "*****************************************************************\n"
       puts "* ITERATION #{iteration} COMPLETE: Steps = #{i-1}, Score = #{old_score}\n"
       puts "*****************************************************************\n"
-      generate_ruby(filename,rubytext)
+      if old_score < best_score
+        generate_ruby(filename,rubytext)
+        best_score = old_score
+      end
     end
     rubytext = newtext
-    oldscore = full_score()
+    old_score = full_score()
     i += 1
   end
   iteration += 1
