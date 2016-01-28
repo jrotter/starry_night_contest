@@ -1,16 +1,6 @@
 require 'chunky_png'
 
-def randomrgb
-  r = rand(255).to_s(16)
-  g = rand(255).to_s(16)
-  b = rand(255).to_s(16)
-  r, g, b = [r, g, b].map { |s| if s.size == 1 then '0' + s else s end }
-  rgb = '0x' + r + g + b
-end
-
 def color(c)
-  ##ChunkyPNG::Color.from_hex(hex)
-#puts ChunkyPNG::Color(c*256)
   ChunkyPNG::Color(c*256+255)
 end
 
@@ -113,7 +103,7 @@ class Block
   def find_best_score
     @score = 1000000.0
     for i in (0...@iterations)
-      r = rand(255*255*255)
+      r = rand(16777216) # 2**24
       s = compute_score(r)
       if s < @score
         @bestcolor = r
