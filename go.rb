@@ -15,8 +15,8 @@ for x in (0...386)
   $o_g[x] = Hash.new
   $o_b[x] = Hash.new
 end
-for x in (0...386)
-  for y in (0...320)
+for y in (0...320) 
+  for x in (0...386)
     $o_r[x][y] = ChunkyPNG::Color.r($original[x,y])
     $o_g[x][y] = ChunkyPNG::Color.g($original[x,y])
     $o_b[x][y] = ChunkyPNG::Color.b($original[x,y])
@@ -30,17 +30,18 @@ class Block
 
   @@all = []
 
-  def initialize(x0,y0,x1,y1)
+  def initialize(x0,y0,x1,y1,parentcolor)
     @x0 = x0
     @x1 = x1
     @y0 = y0
     @y1 = y1
+    @parentcolor = parentcolor
     @bestcolor = nil
     @score = nil
     @pixels = (@x1-@x0)*(@y1-@y0)
-    @iterations = 10000
-    @iterations = 5000 if @pixels > 5000
-    @iterations = 500 if @pixels > 50000
+    @iterations = 15000
+    @iterations = 10000 if @pixels > 5000
+    @iterations = 5000 if @pixels > 50000
     @iterations = 10 if @pixels > 100000
 
     # Only add first to list, split will handle the rest
@@ -65,12 +66,12 @@ class Block
 
   def split
     # Split vertically
-    bottom = Block.new(@x0,@y0,@x1,@y0+(@y1-@y0)/2)
-    top = Block.new(@x0,@y0+(@y1-@y0)/2+1,@x1,@y1)
+    bottom = Block.new(@x0,@y0,@x1,@y0+(@y1-@y0)/2,@bestcolor)
+    top = Block.new(@x0,@y0+(@y1-@y0)/2+1,@x1,@y1,@bestcolor)
 
     # Split horizontally
-    left = Block.new(@x0,@y0,@x0+(@x1-@x0)/2,@y1)
-    right = Block.new(@x0+(@x1-@x0)/2+1,@y0,@x1,@y1)
+    left = Block.new(@x0,@y0,@x0+(@x1-@x0)/2,@y1,@bestcolor)
+    right = Block.new(@x0+(@x1-@x0)/2+1,@y0,@x1,@y1,@bestcolor)
 
     # Remove myself from the global list and add the lower scoring split pair
     @@all.delete(self)
@@ -88,8 +89,8 @@ class Block
     p = ChunkyPNG::Image.new(386,320,color(c))
     p.rect(@x0,@y0,@x1,@y1,color(c),color(c))
     score = 0.0
-    for x in (@x0..@x1)
-      for y in (@y0..@y1)
+    for y in (@y0..@y1)
+      for x in (@x0..@x1)
         score += (ChunkyPNG::Color.r(p[x,y]) - $o_r[x][y])**2
         score += (ChunkyPNG::Color.g(p[x,y]) - $o_g[x][y])**2
         score += (ChunkyPNG::Color.b(p[x,y]) - $o_b[x][y])**2
@@ -102,14 +103,15 @@ class Block
 
   def find_best_score
     @score = 1000000.0
+    r = @parentcolor
     for i in (0...@iterations)
-      r = rand(16777216) # 2**24
       s = compute_score(r)
       if s < @score
         @bestcolor = r
         @score = s
         #puts "New best score #{s} from color #{r.to_s(16)}\n"
       end
+      r = rand(16777216) # 2**24
     end
   end
 
@@ -175,21 +177,18 @@ end
 ####################################################################
 
 Block::clear
-r = Block.new(0,0,385,319)
-i = 1
+r = Block.new(0,0,385,319,0)
 r.find_best_score()
-puts "Blocks = #{i}, Score = #{full_score()}\n"
-filename = "i_#{i.to_s.rjust(2,"0")}"
-rubytext = generate_ruby_text()
-generate_ruby(filename,rubytext)
+puts "Blocks = 1, Score = #{full_score()}\n"
 old_score = 1000000.0
+rubytext = ''
 newtext = ''
 
 i = 2
 while newtext.size <= 1024
   highest_scoring_block.split
   puts "Blocks = #{i}, Score = #{full_score()}\n"
-  filename = "i_#{i.to_s.rjust(2,"0")}"
+  filename = "i_#{(i-1).to_s.rjust(2,"0")}"
   newtext = generate_ruby_text()
   if newtext.size > 1024
     puts "*****************************************************************\n"
