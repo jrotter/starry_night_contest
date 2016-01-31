@@ -9,12 +9,12 @@ Here's how `go.rb` works:
 
 Draw a white 386x320 rectangle.  
 Put the rectangle in a list.
-Build a ruby file to generate that list of rectangles (only one in this case)
+Build a ruby file to generate that list of rectangles (only one in this initial case)
 
 While the generated ruby file is less than 1024 bytes:
 * Search the list for the highest scoring rectangle
-* Try halving the rectangle horizontally and vertically
-* Replace the rectangle in the list with whichever pair scored lower
+* Try halving that rectangle horizontally and vertically
+* Replace that rectangle in the list with whichever pair scored lower
 * Build a ruby file to generate that list of rectangles
 
 
