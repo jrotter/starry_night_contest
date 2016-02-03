@@ -194,9 +194,8 @@ while newtext.size <= 1024
     puts "*****************************************************************\n"
     puts "* COMPLETE: Steps = #{i-1}, Score = #{old_score}\n"
     puts "*****************************************************************\n"
-  else
-    generate_ruby(filename,rubytext)
   end
+  generate_ruby(filename,rubytext)
   rubytext = newtext
   old_score = full_score()
   i += 1
